@@ -62,42 +62,48 @@ def generate_otp_token(email):
     )
     return otp, token
 
-# register route
-@app.route('/register', methods=['GET',"POST"])
+from flask import Flask, render_template, request, session, redirect, url_for
+from emailsend import emailSend  # updated SendGrid version
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         session['username'] = request.form['username']
         session['password'] = request.form['password']
         session['email'] = request.form['email']
-        
-        if not checkUserStatus(session['email']) == True:
-            # generate otp
+
+        if not checkUserStatus(session['email']):
+            # generate otp and token
             otp, token = generate_otp_token(session['email'])
-            print("Registe_otp token:",token)
+            print("Register_otp token:", token)
             session['register_otp_token'] = token
-            # otp send via email
 
-            print('------------Assume like this otp came \
-                  via email:',otp) 
-            
+            # Email body
             body = f"""
-                    Dear customer {session['username']},
-                    This mail is to vefiry your notes management app!!!
-                    Verification OTP is:{otp}.
+                Dear {session['username']},
 
-                    This OTP expires within 2 mins.
-                    Don't replay to this email.
+                Welcome to Notes Management App! Please use the OTP below to verify your account:
 
-                    Best Regards
-                    Notes App. 
-                    """
-            emailSend(
+                Verification OTP: {otp}
+
+                This OTP expires within 2 minutes.
+                Do not reply to this email.
+
+                Best Regards,
+                Notes App
+                """
+                            # Send OTP via SendGrid
+            result = emailSend(
                 to_email=session['email'],
-                subject = "Notes Management OTP Verification",
-                body = body
+                subject="Notes Management OTP Verification",
+                body=body
             )
+            print(result)  # logs success/failure
+
             return redirect(url_for('verifyOTP', token=session['register_otp_token']))
-        return render_template('register.html', msg = "Username email already exist")
+
+        return render_template('register.html', msg="Email already exists!")
+
     return render_template('register.html')
 
 # verifyOTP route
