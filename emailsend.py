@@ -1,33 +1,23 @@
-# importing required modules
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-# load credentials from environment variables
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
-PASSKEY = os.getenv("EMAIL_PASSKEY")
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 
-def emailSend(to_email: str, subject: str, body: str):
+def emailSend(to_email:str, subject:str, body:str):
+    message = Mail(
+        from_email=SENDER_EMAIL,
+        to_emails=to_email,
+        subject=subject,
+        plain_text_content=body
+    )
     try:
-        msg = MIMEMultipart()
-        msg['From'] = SENDER_EMAIL
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-
-        # server connection
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
-        server.login(SENDER_EMAIL, PASSKEY)
-        server.sendmail(from_addr=SENDER_EMAIL, to_addrs=to_email, msg=msg.as_string())
-        server.quit()
-        print(f"Email successfully sent to {to_email}")
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(f"Email sent: {response.status_code}")
     except Exception as e:
-        # Instead of crashing, log the error
-        print(f"Failed to send email to {to_email}: {e}")
-        # Optionally return False to let the app know
+        print(f"Failed to send email: {e}")
         return False
     return True
+    
