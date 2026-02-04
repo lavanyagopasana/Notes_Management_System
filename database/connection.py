@@ -1,15 +1,23 @@
-import mysql.connector as SQLC
+# import mysql.connector as SQLC
 
-# 1. login to database
-database_config = SQLC.connect(
-                        host = 'localhost',
-                        user = 'root',
-                        password = 'root', # your myswl workbench password
-                        database = 'notes_management3234'
-                    )
+# # 1. login to database
+# database_config = SQLC.connect(
+#                         host = 'localhost',
+#                         user = 'root',
+#                         password = 'root', # your myswl workbench password
+#                         database = 'notes_management3234'
+#                     )
 
-# 2. creating cursor object 
+# # 2. creating cursor object
+# cursor = database_config.cursor()
+
+import sqlite3
+
+database_config = sqlite3.connect("notes.db", check_same_thread=False)
 cursor = database_config.cursor()
+cursor.execute("PRAGMA foreign_keys = ON;")
+
+
 print('connected to database successfully')
 
 
