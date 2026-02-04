@@ -1,31 +1,33 @@
-# importing reqiored modules
-import smtplib 
+# importing required modules
+import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
 
-# user credentials 
-SENDER_EMAIL = "lavanyagopasana@gmail.com" # your email address
-PASSKEY = "ybcn xbaq rutd zpsm" # app passkey
-# smtp server
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
+# load credentials from environment variables
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+PASSKEY = os.getenv("EMAIL_PASSKEY")
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 
-# email send function defination
-def emailSend(to_email:str, subject:str, body:str):
+def emailSend(to_email: str, subject: str, body: str):
     try:
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
         msg['To'] = to_email
         msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain')) # attach body 
+        msg.attach(MIMEText(body, 'plain'))
 
         # server connection
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls() #start server securly
-        server.login(SENDER_EMAIL, PASSKEY) # login to server
-        server.sendmail(from_addr=SENDER_EMAIL, 
-                        to_addrs=to_email, 
-                        msg = msg.as_string()) # send mail
+        server.starttls()
+        server.login(SENDER_EMAIL, PASSKEY)
+        server.sendmail(from_addr=SENDER_EMAIL, to_addrs=to_email, msg=msg.as_string())
         server.quit()
+        print(f"Email successfully sent to {to_email}")
     except Exception as e:
-        return f"Something wrong in email send:{e}"
+        # Instead of crashing, log the error
+        print(f"Failed to send email to {to_email}: {e}")
+        # Optionally return False to let the app know
+        return False
+    return True
