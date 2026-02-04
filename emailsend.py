@@ -1,23 +1,21 @@
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from dotenv import load_dotenv
 
-load_dotenv()
-
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-SENDER_EMAIL = "your_verified_sender_email@example.com"  # must be verified in SendGrid
+SENDER_EMAIL = "lavanyagopasana@gmail.com"  # must match verified sender
 
 def emailSend(to_email: str, subject: str, body: str):
+    message = Mail(
+        from_email=SENDER_EMAIL,
+        to_emails=to_email,
+        subject=subject,
+        html_content=body
+    )
     try:
-        message = Mail(
-            from_email=SENDER_EMAIL,
-            to_emails=to_email,
-            subject=subject,
-            plain_text_content=body
-        )
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
         response = sg.send(message)
-        return f"Email sent successfully! Status code: {response.status_code}"
+        print("SendGrid status code:", response.status_code)
+        return "Email sent successfully" if response.status_code in [200, 202] else response.body
     except Exception as e:
-        return f"Error sending email: {e}"
+        print("SendGrid error:", e)
+        return f"Email failed: {e}"
