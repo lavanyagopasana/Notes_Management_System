@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">✏️ Update Note</h4>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST"
+                          action="{{ url_for('edit_note', note_id=note[0], token=token) }}">
+
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text"
+                                   name="title"
+                                   class="form-control"
+                                   value="{{ note[1] }}"
+                                   required>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="mb-3">
+                            <label class="form-label">Content</label>
+                            <textarea name="content"
+                                      class="form-control"
+                                      rows="5"
+                                      required>{{ note[2] }}</textarea>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('dashboard') }}"
+                               class="btn btn-outline-secondary">
+                                ⬅ Back
+                            </a>
+
+                            <button type="submit" class="btn btn-success">
+                                💾 Update Note
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
