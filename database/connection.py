@@ -12,14 +12,11 @@
 # cursor = database_config.cursor()
 
 import sqlite3
-
+# SQLite connection
 database_config = sqlite3.connect("notes.db", check_same_thread=False)
 cursor = database_config.cursor()
 cursor.execute("PRAGMA foreign_keys = ON;")
-
-
-print('connected to database successfully')
-
+print('Connected to SQLite database successfully')
 
 # print(database_config)
 # print(cursor)
