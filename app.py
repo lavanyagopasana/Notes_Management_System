@@ -22,6 +22,8 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY') or 'this_is_a_secret_key'
 
+create_tables()
+
 # secure time based url serializer
 serializer = URLSafeTimedSerializer(app.secret_key)
 

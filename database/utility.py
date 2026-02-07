@@ -1,108 +1,181 @@
-# import sqlite3
-
-# # SQLite connection
-# database_config = sqlite3.connect("notes.db", check_same_thread=False)
-# cursor = database_config.cursor()
-# cursor.execute("PRAGMA foreign_keys = ON;")
-# print('Connected to SQLite database successfully')
-
-from database.connection import database_config, cursor
+from database.connection import get_db
 
 # ---------------- User Table Functions ----------------
 
 def addUser(username: str, email: str, password: str):
+    db = None
     try:
-        query = "INSERT INTO USERS (USERNAME, EMAIL, PASSWORD) VALUES (?, ?, ?)"
-        cursor.execute(query, (username, email, password))
-        database_config.commit()
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "INSERT INTO USERS (USERNAME, EMAIL, PASSWORD) VALUES (?, ?, ?)",
+            (username, email.lower(), password)
+        )
+        db.commit()
         return True
     except Exception as e:
-        return f"Error in addUser: {e}"
+        print("Error in addUser:", e)
+        return False
+    finally:
+        if db:
+            db.close()
 
 
 def checkUserStatus(email: str):
+    db = None
     try:
-        query = "SELECT USERID FROM USERS WHERE EMAIL = ?"
-        cursor.execute(query, (email,))
-        result = cursor.fetchone()
-        return bool(result)
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT USERID FROM USERS WHERE EMAIL = ?",
+            (email.lower(),)
+        )
+        return cursor.fetchone() is not None
     except Exception as e:
-        return f"Error in checkUserStatus: {e}"
+        print("Error in checkUserStatus:", e)
+        return False
+    finally:
+        if db:
+            db.close()
 
 
 def getPasswordFromDB(email: str):
+    db = None
     try:
-        query = "SELECT PASSWORD FROM USERS WHERE EMAIL = ?"
-        cursor.execute(query, (email,))
-        result = cursor.fetchone()
-        if result:
-            return result[0]
-        return None
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT PASSWORD FROM USERS WHERE EMAIL = ?",
+            (email.lower(),)
+        )
+        row = cursor.fetchone()
+        return row["PASSWORD"] if row else None
     except Exception as e:
-        return f"Error in getPasswordFromDB: {e}"
+        print("Error in getPasswordFromDB:", e)
+        return None
+    finally:
+        if db:
+            db.close()
 
 
 def updatePassword(email: str, new_password: str):
+    db = None
     try:
-        query = "UPDATE USERS SET PASSWORD = ? WHERE EMAIL = ?"
-        cursor.execute(query, (new_password, email))
-        database_config.commit()
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "UPDATE USERS SET PASSWORD = ? WHERE EMAIL = ?",
+            (new_password, email.lower())
+        )
+        db.commit()
         return cursor.rowcount == 1
     except Exception as e:
-        return f"Error in updatePassword: {e}"
+        print("Error in updatePassword:", e)
+        return False
+    finally:
+        if db:
+            db.close()
 
 
 # ---------------- Notes Table Functions ----------------
 
 def addNotesInDB(email: str, title: str, content: str):
+    db = None
     try:
-        # get userid from users table
-        cursor.execute("SELECT USERID FROM USERS WHERE EMAIL = ?", (email,))
-        result = cursor.fetchone()
-        if not result:
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT USERID FROM USERS WHERE EMAIL = ?",
+            (email.lower(),)
+        )
+        row = cursor.fetchone()
+        if not row:
             return False
-        userid = result[0]
-        query = "INSERT INTO NOTES (USERID, EMAIL, TITLE, CONTENT) VALUES (?, ?, ?, ?)"
-        cursor.execute(query, (userid, email, title, content))
-        database_config.commit()
+
+        cursor.execute(
+            "INSERT INTO NOTES (USERID, EMAIL, TITLE, CONTENT) VALUES (?, ?, ?, ?)",
+            (row["USERID"], email.lower(), title, content)
+        )
+        db.commit()
         return True
     except Exception as e:
-        return f"Error in addNotesInDB: {e}"
+        print("Error in addNotesInDB:", e)
+        return False
+    finally:
+        if db:
+            db.close()
 
 
 def getNotesFromDB(email: str):
+    db = None
     try:
-        query = "SELECT NOTEID, TITLE, CONTENT FROM NOTES WHERE EMAIL = ?"
-        cursor.execute(query, (email,))
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT NOTEID, TITLE, CONTENT FROM NOTES WHERE EMAIL = ?",
+            (email.lower(),)
+        )
         return cursor.fetchall()
     except Exception as e:
-        return f"Error in getNotesFromDB: {e}"
+        print("Error in getNotesFromDB:", e)
+        return []
+    finally:
+        if db:
+            db.close()
 
 
 def getNoteById(note_id: int, email: str):
+    db = None
     try:
-        query = "SELECT NOTEID, TITLE, CONTENT FROM NOTES WHERE NOTEID = ? AND EMAIL = ?"
-        cursor.execute(query, (note_id, email))
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT NOTEID, TITLE, CONTENT FROM NOTES WHERE NOTEID = ? AND EMAIL = ?",
+            (note_id, email.lower())
+        )
         return cursor.fetchone()
     except Exception as e:
-        return f"Error in getNoteById: {e}"
+        print("Error in getNoteById:", e)
+        return None
+    finally:
+        if db:
+            db.close()
 
 
 def updateNoteInDB(note_id: int, email: str, title: str, content: str):
+    db = None
     try:
-        query = "UPDATE NOTES SET TITLE = ?, CONTENT = ? WHERE NOTEID = ? AND EMAIL = ?"
-        cursor.execute(query, (title, content, note_id, email))
-        database_config.commit()
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "UPDATE NOTES SET TITLE = ?, CONTENT = ? WHERE NOTEID = ? AND EMAIL = ?",
+            (title, content, note_id, email.lower())
+        )
+        db.commit()
         return cursor.rowcount == 1
     except Exception as e:
-        return f"Error in updateNoteInDB: {e}"
+        print("Error in updateNoteInDB:", e)
+        return False
+    finally:
+        if db:
+            db.close()
 
 
 def deleteNoteFromDB(note_id: int, email: str):
+    db = None
     try:
-        query = "DELETE FROM NOTES WHERE NOTEID = ? AND EMAIL = ?"
-        cursor.execute(query, (note_id, email))
-        database_config.commit()
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "DELETE FROM NOTES WHERE NOTEID = ? AND EMAIL = ?",
+            (note_id, email.lower())
+        )
+        db.commit()
         return cursor.rowcount == 1
     except Exception as e:
-        return f"Error in deleteNoteFromDB: {e}"
+        print("Error in deleteNoteFromDB:", e)
+        return False
+    finally:
+        if db:
+            db.close()
