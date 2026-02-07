@@ -177,7 +177,7 @@ def forgot_password():
                     Dear customer ,
                     This mail is to update notes management app password !
                     
-                    Password reset link:{reset_link}.
+                    Password reset link:{reset_link}
 
                     This link expires within 10 mins.
                     Don't replay to this email.
