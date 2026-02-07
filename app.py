@@ -38,6 +38,11 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
+        print("EMAIL:", email)
+        print("HASH FROM DB:", getPasswordFromDB(email))
+        print("ENTERED PASSWORD:", password)
+
+
         if checkUserStatus(email=email):
             if check_password_hash(getPasswordFromDB(email=email), password):
                 token = serializer.dumps(email, salt='login-auth')
