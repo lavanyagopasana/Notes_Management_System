@@ -1,6 +1,8 @@
-from database.connection import database_config, cursor
+from database.connection import get_db
 
 def create_tables():
+    db = get_db()
+    cursor = db.cursor()
 
     users_table_query = """
     CREATE TABLE IF NOT EXISTS USERS (
@@ -27,6 +29,5 @@ def create_tables():
 
     cursor.execute(users_table_query)
     cursor.execute(notes_table_query)
-
-    database_config.commit()
+    db.commit()
     print("tables created successfully")
